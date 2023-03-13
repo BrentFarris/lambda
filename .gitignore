@@ -351,3 +351,5 @@ MigrationBackup/
 
 out/
 *.idb
+*.o
+lambda
