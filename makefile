@@ -23,11 +23,10 @@ RELEASE_DEFINES :=	-DNDEBUG
 ################################################################################
 # Compilation options                                                          #
 ################################################################################
-CFLAGS = -O0 -g -gdwarf-4 -W -Wall -Werror -mavx $(DEBUG_DEFINES) $(DEFINES)
-#CFLAGS = -O2 -W -Wall -Werror -mavx $(RELEASE_DEFINES) $(DEFINES)
+CFLAGS = -O0 -g -c -gdwarf-4 -W -Wall -Werror -mavx -std=c++20 $(DEFINES)
 
 .cpp.o:
-	$(COMPILER) $(CFLAGS) -std=c++20 -c -stdlib=libc++ -fimplicit-modules -fimplicit-module-maps $(INCLUDES) $< -o $@
+	$(COMPILER) $(CFLAGS) $(INCLUDES) $< -o $@
 
 .PHONY: all clean lambda
 
@@ -35,9 +34,9 @@ CFLAGS = -O0 -g -gdwarf-4 -W -Wall -Werror -mavx $(DEBUG_DEFINES) $(DEFINES)
 # Build targets                                                                #
 ################################################################################
 lambda: INCLUDES = $(EDITORINC)
-lambda: DEFINES = $(EDITORDEFS)
+lambda: DEFINES = $(EDITORDEFS) $(DEBUG_DEFINES)
 lambda: $(EDITOR_OBJS) $(ALL_SOURCE)
-	$(COMPILER) $(EDITOR_OBJS) $(EDITORINC) $(EDITORLIBS) -stdlib=libc++ -fimplicit-modules -fimplicit-module-maps -o $(EDITORPATH)
+	$(COMPILER) $(EDITOR_OBJS) $(EDITORINC) $(EDITORLIBS) -o $(EDITORPATH)
 
 # Cleaning rule
 clean:
