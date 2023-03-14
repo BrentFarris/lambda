@@ -1,3 +1,6 @@
+#ifndef LAMBDA_MATH_VECTOR3_H
+#define LAMBDA_MATH_VECTOR3_H
+
 #include <cmath>
 #include <string>
 #include <sstream>
@@ -14,23 +17,10 @@ struct Vector3 {
 		};
 	};
 
-	Vector3() {
-		x = 0.0;
-		y = 0.0;
-		z = 0.0;
-	}
-
-	Vector3(double x, double y, double z) {
-		this->x = x;
-		this->y = y;
-		this->z = z;
-	}
-
-	Vector3(double xyz) {
-		this->x = xyz;
-		this->y = xyz;
-		this->z = xyz;
-	}
+	Vector3() : x(0.0), y(0.0), z(0.0) {}
+	Vector3(double x, double y, double z) : x(x), y(y), z(z) {}
+	Vector3(double xyz) : x(xyz), y(xyz), z(xyz) {}
+	Vector3(double* xyz) : x(xyz[0]), y(xyz[1]), z(xyz[2]) {}
 
 	static Vector3 zero() {
 		return Vector3(0.0);
@@ -64,11 +54,11 @@ struct Vector3 {
 		return Vector3(0.0, 0.0, 1.0);
 	}
 
-	double length() {
+	double length() const {
 		return sqrt(x * x + y * y + z * z);
 	}
 
-	double magnitude() {
+	double magnitude() const {
 		return sqrt((x * x) + (y * y) + (z * z));
 	}
 
@@ -79,29 +69,27 @@ struct Vector3 {
 		z /= mag;
 	}
 
-	Vector3 normalized() {
+	Vector3 normal() const {
 		double mag = magnitude();
 		return Vector3(x / mag, y / mag, z / mag);
 	}
 
-	double dot(Vector3& other) {
-		return x * other.x + y * other.y + z * other.z;
-	}
-
-	Vector3 cross(Vector3& other) {
-		return Vector3(y * other.z - z * other.y,
-			z * other.x - x * other.z,
-			x * other.y - y * other.x);
-	}
-
-	double distance(Vector3& target) {
-		return sqrt((target.x - x) * (target.x - x)
-			+ (target.y - y) * (target.y - y)
-			+ (target.z - z) * (target.z - z));
-	}
-
 	Vector3 abs() {
 		return Vector3(std::abs(x), std::abs(y), std::abs(z));
+	}
+
+	Vector3 orthogonal() const {
+		double tx = std::abs(x);
+		double ty = std::abs(y);
+		double tz = std::abs(z);
+		Vector3 other = tx < ty
+			? (tx < tz ? right() : forward())
+			: (ty < tz ? up() : forward());
+		return cross(*this, other);
+	}
+
+	Vector3 negative() const {
+		return { -x, -y, -z };
 	}
 
 	std::string to_string() {
@@ -110,7 +98,7 @@ struct Vector3 {
 		return ss.str();
 	}
 
-	void from_string(std::string& str) {
+	void from_string(const std::string& str) {
 		char skip;
 		std::stringstream ss;
 		ss << str;
@@ -121,57 +109,73 @@ struct Vector3 {
 		std::cout << "Vector3<" << x << ", " << y << ", " << z << ">";
 	}
 
-	static Vector3 min(Vector3& a, Vector3& b) {
+	static double distance(const Vector3& from, const Vector3& to) {
+		return sqrt((to.x - from.x) * (to.x - from.x)
+			+ (to.y - from.y) * (to.y - from.y)
+			+ (to.z - from.z) * (to.z - from.z));
+	}
+
+	static double dot(const Vector3& lhs, const Vector3& rhs) {
+		return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
+	}
+
+	static Vector3 cross(const Vector3& lhs, const Vector3& rhs) {
+		return Vector3(lhs.y * rhs.z - lhs.z * rhs.y,
+			lhs.z * rhs.x - lhs.x * rhs.z,
+			lhs.x * rhs.y - lhs.y * rhs.x);
+	}
+
+	static Vector3 min(const Vector3& a, const Vector3& b) {
 		return Vector3(std::min(a.x, b.x), std::min(a.y, b.y), std::min(a.z, b.z));
 	}
 
-	static Vector3 max(Vector3& a, Vector3& b) {
+	static Vector3 max(const Vector3& a, const Vector3& b) {
 		return Vector3(std::max(a.x, b.x), std::max(a.y, b.y), std::max(a.z, b.z));
 	}
 
-	static Vector3 max_abs(Vector3& a, Vector3& b) {
+	static Vector3 max_abs(const Vector3& a, const Vector3& b) {
 		return Vector3(std::max(std::abs(a.x), std::abs(b.x)),
 			std::max(std::abs(a.y), std::abs(b.y)),
 			std::max(std::abs(a.z), std::abs(b.z)));
 	}
 
-	static Vector3 lerp(Vector3& from, Vector3& to, double t) {
+	static Vector3 lerp(const Vector3& from, const Vector3& to, double t) {
 		return Vector3(from.x + (to.x - from.x) * t,
 			from.y + (to.y - from.y) * t,
 			from.z + (to.z - from.z) * t);
 	}
 
-	Vector3 operator+(Vector3& other) {
+	Vector3 operator+(const Vector3& other) const {
 		return Vector3(x + other.x, y + other.y, z + other.z);
 	}
 
-	Vector3 operator-(Vector3& other) {
+	Vector3 operator-(const Vector3& other) const {
 		return Vector3(x - other.x, y - other.y, z - other.z);
 	}
 
-	Vector3 operator*(double scalar) {
+	Vector3 operator*(double scalar) const {
 		return Vector3(x * scalar, y * scalar, z * scalar);
 	}
 
-	Vector3 operator*(Vector3& other) {
+	Vector3 operator*(const Vector3& other) const {
 		return Vector3(x * other.x, y * other.y, z * other.z);
 	}
 
-	Vector3 operator/(double scalar) {
+	Vector3 operator/(double scalar) const {
 		return Vector3(x / scalar, y / scalar, z / scalar);
 	}
 
-	Vector3 operator/(Vector3 other) {
+	Vector3 operator/(const Vector3& other) const {
 		return Vector3(x / other.x, y / other.y, z / other.z);
 	}
 
-	void operator+=(Vector3& other) {
+	void operator+=(const Vector3& other) {
 		x += other.x;
 		y += other.y;
 		z += other.z;
 	}
 
-	void operator-=(Vector3& other) {
+	void operator-=(const Vector3& other) {
 		x -= other.x;
 		y -= other.y;
 		z -= other.z;
@@ -183,7 +187,7 @@ struct Vector3 {
 		z *= scalar;
 	}
 
-	void operator*=(Vector3& other) {
+	void operator*=(const Vector3& other) {
 		x *= other.x;
 		y *= other.y;
 		z *= other.z;
@@ -195,23 +199,25 @@ struct Vector3 {
 		z /= scalar;
 	}
 
-	void operator/=(Vector3& other) {
+	void operator/=(const Vector3& other) {
 		x /= other.x;
 		y /= other.y;
 		z /= other.z;
 	}
 
-	bool operator==(Vector3& other) {
+	bool operator==(const Vector3& other) const {
 		double epsilon = std::numeric_limits<double>::epsilon();
 		return std::abs(x - other.x) < epsilon
 			&& std::abs(y - other.y) < epsilon
 			&& std::abs(z - other.z) < epsilon;
 	}
 
-	bool operator!=(Vector3& other) {
+	bool operator!=(const Vector3& other) const {
 		double epsilon = std::numeric_limits<double>::epsilon();
 		return std::abs(x - other.x) > epsilon
 			|| std::abs(y - other.y) > epsilon
 			|| std::abs(z - other.z) > epsilon;
 	}
 };
+
+#endif

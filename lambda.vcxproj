@@ -137,9 +137,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\math\matrix4x4.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\math\geometry.h" />
     <ClInclude Include="src\math\hardware_vector.h" />
+    <ClInclude Include="src\math\matrix4x4.h" />
+    <ClInclude Include="src\math\quaternion.h" />
     <ClInclude Include="src\math\vector2.h" />
     <ClInclude Include="src\math\vector3.h" />
     <ClInclude Include="src\math\vector4.h" />

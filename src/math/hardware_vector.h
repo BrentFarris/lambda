@@ -48,13 +48,11 @@ typedef __m256d vf64x4;
 #define vf32x8_mul(outName, L_f32x8, R_f32x8) vf32x8 (outName) = _mm256_mul_ps((L_f32x8), (R_f32x8))
 #define vf32x8_div(outName, L_f32x8, R_f32x8) vf32x8 (outName) = _mm256_div_ps((L_f32x8), (R_f32x8))
 
-#define vf64x8_set(f0, f1, f2, f3, f4, f5, f6, f7) _mm256_setr_pd((f0), (f1), (f2), (f3), (f4), (f5), (f6), (f7))
-#define vf64x8_ld(f64Arr8) _mm256_load_pd(f64Arr8)
 #define vf64x8_st(f64Arr8, f64x8) _mm256_store_pd((f64Arr8), (f64x8))
-#define vf64x8_add(outName, L_f64x8, R_f64x8) vf64x8 (outName) = _mm256_add_pd((L_f64x8), (R_f64x8))
-#define vf64x8_sub(outName, L_f64x8, R_f64x8) vf64x8 (outName) = _mm256_sub_pd((L_f64x8), (R_f64x8))
-#define vf64x8_mul(outName, L_f64x8, R_f64x8) vf64x8 (outName) = _mm256_mul_pd((L_f64x8), (R_f64x8))
-#define vf64x8_div(outName, L_f64x8, R_f64x8) vf64x8 (outName) = _mm256_div_pd((L_f64x8), (R_f64x8))
+#define vf64x4n_add(outName, L_f64x8, R_f64x8) vf64x4 (outName) = _mm256_add_pd((L_f64x8), (R_f64x8))
+#define vf64x4n_sub(outName, L_f64x8, R_f64x8) vf64x4 (outName) = _mm256_sub_pd((L_f64x8), (R_f64x8))
+#define vf64x4n_mul(outName, L_f64x8, R_f64x8) vf64x4 (outName) = _mm256_mul_pd((L_f64x8), (R_f64x8))
+#define vf64x4n_div(outName, L_f64x8, R_f64x8) vf64x4 (outName) = _mm256_div_pd((L_f64x8), (R_f64x8))
 
 #define vi32x4_set(i0, i1, i2, i3) _mm_setr_epi32((i0), (i1), (i2), (i3))
 #define vi32x4_ld(i32Arr4) _mm_load_epi32(i32Arr4)
