@@ -3,6 +3,7 @@
 #include <sstream>
 #include <iostream>
 #include <algorithm>
+#include "hardware_vector.h"
 
 struct Vector4 {
 	union {
@@ -49,28 +50,53 @@ struct Vector4 {
 	}
 
 	double length() {
-		return sqrt(x * x + y * y + z * z + w * w);
-	}
-
-	double magnitude() {
-		return sqrt((x * x) + (y * y) + (z * z) + (w * w));
+#if defined(USE_SIMD) && !defined(SIMD_NEON)
+		vf64x4 l = vf64x4_ld(linear);
+		vf64x4 r = vf64x4_ld(linear);
+		vf64x4 v = vf64x4_mul(l, r);
+		double m = vf64x4_sum(v);
+#else
+		double m = (x * x) + (y * y) + (z * z) + (w * w);
+#endif
+		return sqrt(m);
 	}
 
 	void normalize() {
-		double mag = magnitude();
+		double mag = length();
+#if defined(USE_SIMD) && !defined(SIMD_NEON)
+		vf64x4 l = vf64x4_ld(linear);
+		vf64x4 r = vf64x4_set(mag, mag, mag, mag);
+		vf64x4_st(linear, vf64x4_div(l, r));
+#else
 		x /= mag;
 		y /= mag;
 		z /= mag;
 		w /= mag;
+#endif
 	}
 
 	Vector4 normalized() {
-		double mag = magnitude();
+		double mag = length();
+#if defined(USE_SIMD) && !defined(SIMD_NEON)
+		Vector4 ret = *this;
+		vf64x4 l = vf64x4_ld(linear);
+		vf64x4 r = vf64x4_set(mag, mag, mag, mag);
+		vf64x4_st(ret.linear, vf64x4_div(l, r));
+		return ret;
+#else
 		return Vector4(x / mag, y / mag, z / mag, w / mag);
+#endif
 	}
 
 	double dot(Vector4& other) {
+#if defined(USE_SIMD) && !defined(SIMD_NEON)
+		vf64x4 l = vf64x4_ld(linear);
+		vf64x4 r = vf64x4_ld(other.linear);
+		vf64x4 v = vf64x4_mul(l, r);
+		return vf64x4_sum(v);
+#else
 		return x * other.x + y * other.y + z * other.z + w * other.w;
+#endif
 	}
 
 	Vector4 abs() {
@@ -103,91 +129,208 @@ struct Vector4 {
 	}
 
 	static Vector4 lerp(Vector4& from, Vector4& to, double t) {
+#if defined(USE_SIMD) && !defined(SIMD_NEON)
+		Vector4 ret = to;
+		vf64x4 l = vf64x4_ld(ret.linear);
+		vf64x4 r = vf64x4_ld(from.linear);
+		vf64x4 vt = vf64x4_set(t, t, t, t);
+		vf64x4_st(ret.linear, vf64x4_add(l, vf64x4_mul(vf64x4_sub(l, r), vt)));
+		return ret;
+#else
 		return Vector4(from.x + (to.x - from.x) * t,
 			from.y + (to.y - from.y) * t,
 			from.z + (to.z - from.z) * t,
 			from.w + (to.w - from.w) * t);
+#endif
 	}
 
 	Vector4 operator+(Vector4& other) {
+#if defined(USE_SIMD) && !defined(SIMD_NEON)
+		Vector4 ret = *this;
+		vf64x4 l = vf64x4_ld(ret.linear);
+		vf64x4 r = vf64x4_ld(other.linear);
+		vf64x4_st(ret.linear, vf64x4_add(l, r));
+		return ret;
+#else
 		return Vector4(x + other.x, y + other.y, z + other.z, w + other.w);
+#endif
 	}
 
 	Vector4 operator-(Vector4& other) {
+#if defined(USE_SIMD) && !defined(SIMD_NEON)
+		Vector4 ret = *this;
+		vf64x4 l = vf64x4_ld(ret.linear);
+		vf64x4 r = vf64x4_ld(other.linear);
+		vf64x4_st(ret.linear, vf64x4_sub(l, r));
+		return ret;
+#else
 		return Vector4(x - other.x, y - other.y, z - other.z, w - other.w);
+#endif
 	}
 
 	Vector4 operator*(double scalar) {
+#if defined(USE_SIMD) && !defined(SIMD_NEON)
+		Vector4 ret = *this;
+		vf64x4 l = vf64x4_ld(ret.linear);
+		vf64x4 r = vf64x4_set(scalar, scalar, scalar, scalar);
+		vf64x4_st(ret.linear, vf64x4_mul(l, r));
+		return ret;
+#else
 		return Vector4(x * scalar, y * scalar, z * scalar, w * scalar);
+#endif
 	}
 
 	Vector4 operator*(Vector4& other) {
+#if defined(USE_SIMD) && !defined(SIMD_NEON)
+		Vector4 ret = *this;
+		vf64x4 l = vf64x4_ld(ret.linear);
+		vf64x4 r = vf64x4_ld(other.linear);
+		vf64x4_st(ret.linear, vf64x4_mul(l, r));
+		return ret;
+#else
 		return Vector4(x * other.x, y * other.y, z * other.z, w * other.w);
+#endif
 	}
 
 	Vector4 operator/(double scalar) {
+#if defined(USE_SIMD) && !defined(SIMD_NEON)
+		Vector4 ret = *this;
+		vf64x4 l = vf64x4_ld(ret.linear);
+		vf64x4 r = vf64x4_set(scalar, scalar, scalar, scalar);
+		vf64x4_st(ret.linear, vf64x4_div(l, r));
+		return ret;
+#else
 		return Vector4(x / scalar, y / scalar, z / scalar, w / scalar);
+#endif
 	}
 
 	Vector4 operator/(Vector4 other) {
+#if defined(USE_SIMD) && !defined(SIMD_NEON)
+		Vector4 ret = *this;
+		vf64x4 l = vf64x4_ld(ret.linear);
+		vf64x4 r = vf64x4_ld(other.linear);
+		vf64x4_st(ret.linear, vf64x4_div(l, r));
+		return ret;
+#else
 		return Vector4(x / other.x, y / other.y, z / other.z, w / other.w);
+#endif
 	}
 
 	void operator+=(Vector4& other) {
+#if defined(USE_SIMD) && !defined(SIMD_NEON)
+		vf64x4 l = vf64x4_ld(linear);
+		vf64x4 r = vf64x4_ld(other.linear);
+		vf64x4_st(linear, vf64x4_add(l, r));
+#else
 		x += other.x;
 		y += other.y;
 		z += other.z;
 		w += other.w;
+#endif
 	}
 
 	void operator-=(Vector4& other) {
+#if defined(USE_SIMD) && !defined(SIMD_NEON)
+		vf64x4 l = vf64x4_ld(linear);
+		vf64x4 r = vf64x4_ld(other.linear);
+		vf64x4_st(linear, vf64x4_sub(l, r));
+#else
 		x -= other.x;
 		y -= other.y;
 		z -= other.z;
 		w -= other.w;
+#endif
 	}
 
 	void operator*=(double scalar) {
+#if defined(USE_SIMD) && !defined(SIMD_NEON)
+		vf64x4 l = vf64x4_ld(linear);
+		vf64x4 r = vf64x4_set(scalar, scalar, scalar, scalar);
+		vf64x4_st(linear, vf64x4_mul(l, r));
+#else
 		x *= scalar;
 		y *= scalar;
 		z *= scalar;
 		w *= scalar;
+#endif
 	}
 
 	void operator*=(Vector4& other) {
+#if defined(USE_SIMD) && !defined(SIMD_NEON)
+		vf64x4 l = vf64x4_ld(linear);
+		vf64x4 r = vf64x4_ld(other.linear);
+		vf64x4_st(linear, vf64x4_add(l, r));
+#else
 		x *= other.x;
 		y *= other.y;
 		z *= other.z;
 		w *= other.w;
+#endif
 	}
 
 	void operator/=(double scalar) {
+#if defined(USE_SIMD) && !defined(SIMD_NEON)
+		vf64x4 l = vf64x4_ld(linear);
+		vf64x4 r = vf64x4_set(scalar, scalar, scalar, scalar);
+		vf64x4_st(linear, vf64x4_div(l, r));
+#else
 		x /= scalar;
 		y /= scalar;
 		z /= scalar;
 		w /= scalar;
+#endif
 	}
 
 	void operator/=(Vector4& other) {
+#if defined(USE_SIMD) && !defined(SIMD_NEON)
+		vf64x4 l = vf64x4_ld(linear);
+		vf64x4 r = vf64x4_ld(other.linear);
+		vf64x4_st(linear, vf64x4_div(l, r));
+#else
 		x /= other.x;
 		y /= other.y;
 		z /= other.z;
 		w /= other.w;
+#endif
 	}
 
 	bool operator==(Vector4& other) {
 		double epsilon = std::numeric_limits<double>::epsilon();
-		return std::abs(x - other.x) < epsilon
-			&& std::abs(y - other.y) < epsilon
-			&& std::abs(z - other.z) < epsilon
-			&& std::abs(w - other.w) < epsilon;
+		double d[4];
+#if defined(USE_SIMD) && !defined(SIMD_NEON)
+		vf64x4 l = vf64x4_ld(linear);
+		vf64x4 r = vf64x4_ld(other.linear);
+		vf64x4_st(d, vf64x4_sub(l, r));
+#else
+		d[0] = x - other.x;
+		d[1] = y - other.y;
+		d[2] = z - other.z;
+		d[3] = w - other.w;
+#endif
+		// TODO:  Could probably use the abs of the sum rather than each
+		return std::abs(d[0]) < epsilon
+			&& std::abs(d[1]) < epsilon
+			&& std::abs(d[2]) < epsilon
+			&& std::abs(d[3]) < epsilon;
 	}
 
 	bool operator!=(Vector4& other) {
 		double epsilon = std::numeric_limits<double>::epsilon();
-		return std::abs(x - other.x) > epsilon
-			|| std::abs(y - other.y) > epsilon
-			|| std::abs(z - other.z) > epsilon
-			|| std::abs(w - other.w) > epsilon;
+		double d[4];
+#if defined(USE_SIMD) && !defined(SIMD_NEON)
+		vf64x4 l = vf64x4_ld(linear);
+		vf64x4 r = vf64x4_ld(other.linear);
+		vf64x4_st(d, vf64x4_sub(l, r));
+#else
+		d[0] = x - other.x;
+		d[1] = y - other.y;
+		d[2] = z - other.z;
+		d[3] = w - other.w;
+#endif
+		// TODO:  Could probably use the abs of the sum rather than each
+		return std::abs(d[0]) > epsilon
+			&& std::abs(d[1]) > epsilon
+			&& std::abs(d[2]) > epsilon
+			&& std::abs(d[3]) > epsilon;
 	}
 };
