@@ -111,7 +111,7 @@
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <TreatWarningAsError>true</TreatWarningAsError>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <CompileAs>CompileAsCppModule</CompileAs>
+      <CompileAs>Default</CompileAs>
       <AdditionalOptions>/Wv:18 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -137,8 +137,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\math\point_2d.cpp" />
-    <ClCompile Include="src\math\point_3d.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\math\hardware_vector.h" />
+    <ClInclude Include="src\math\vector2.h" />
+    <ClInclude Include="src\math\vector3.h" />
+    <ClInclude Include="src\math\vector4.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
