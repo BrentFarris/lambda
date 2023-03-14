@@ -109,22 +109,22 @@ struct Matrix4x4 {
 	}
 
 	void reset() {
-		x0y0 = 1.0F;
-		x1y0 = 0.0F;
-		x2y0 = 0.0F;
-		x3y0 = 0.0F;
-		x0y1 = 0.0F;
-		x1y1 = 1.0F;
-		x2y1 = 0.0F;
-		x3y1 = 0.0F;
-		x0y2 = 0.0F;
-		x1y2 = 0.0F;
-		x2y2 = 1.0F;
-		x3y2 = 0.0F;
-		x0y3 = 0.0F;
-		x1y3 = 0.0F;
-		x2y3 = 0.0F;
-		x3y3 = 1.0F;
+		x0y0 = 1.0;
+		x1y0 = 0.0;
+		x2y0 = 0.0;
+		x3y0 = 0.0;
+		x0y1 = 0.0;
+		x1y1 = 1.0;
+		x2y1 = 0.0;
+		x3y1 = 0.0;
+		x0y2 = 0.0;
+		x1y2 = 0.0;
+		x2y2 = 1.0;
+		x3y2 = 0.0;
+		x0y3 = 0.0;
+		x1y3 = 0.0;
+		x2y3 = 0.0;
+		x3y3 = 1.0;
 	}
 
 	void add(const Matrix4x4& rhs) {
@@ -374,7 +374,7 @@ struct Matrix4x4 {
 	}
 
 	void inverse() {
-		double t[6] = { 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F };
+		double t[6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 		double a = x0y0, b = x0y1, c = x0y2, d = x0y3,
 			e = x1y0, f = x1y1, g = x1y2, h = x1y3,
 			i = x2y0, j = x2y1, k = x2y2, l = x2y3,
@@ -460,7 +460,7 @@ struct Matrix4x4 {
 
 	static Matrix4x4 projection_gl2vulkan(const Matrix4x4& mat) {
 		Matrix4x4 res = mat;
-		res.x1y1 *= -1.0F;
+		res.x1y1 *= -1.0;
 		return res;
 	}
 

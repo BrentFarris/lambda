@@ -73,7 +73,7 @@ struct Vector2 {
 	}
 
 	double angle(const Vector2& target) {
-		return (atan2(x - target.x, y - target.y) * (180.0F / 3.14159265358979323846)) + 180.0;
+		return (atan2(x - target.x, y - target.y) * (180.0 / 3.14159265358979323846)) + 180.0;
 	}
 
 	Vector2 min(const Vector2& a, const Vector2& b) {

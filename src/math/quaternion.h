@@ -22,7 +22,6 @@ struct Quaternion {
 	Quaternion(double w, double x, double y, double z) : w(w), x(x), y(y), z(z) {}
 	Quaternion(double* wxyz) : w(wxyz[0]), x(wxyz[1]), y(wxyz[2]), z(wxyz[3]) {}
 	Quaternion(Vector4& input) : w(input.w), x(input.x), y(input.y), z(input.z) {}
-	Quaternion(const Quaternion& other) : w(other.w), x(other.x), y(other.y), z(other.z) {}
 
 	Matrix4x4 to_matrix4x4() const {
 		Matrix4x4 out{};
@@ -31,22 +30,22 @@ struct Quaternion {
 		double sqy = y * y;
 		double sqz = z * z;
 		// invs (inverse square length) is only required if quaternion is not already normalized
-		double invs = 1.0F / (sqx + sqy + sqz + sqw);
+		double invs = 1.0 / (sqx + sqy + sqz + sqw);
 		out.x0y0 = (sqx - sqy - sqz + sqw) * invs; // since sqw + sqx + sqy + sqz =1/invs*invs
 		out.x1y1 = (-sqx + sqy - sqz + sqw) * invs;
 		out.x2y2 = (-sqx - sqy + sqz + sqw) * invs;
 		double tmp1 = x * y;
 		double tmp2 = z * w;
-		out.x1y0 = 2.0F * (tmp1 + tmp2) * invs;
-		out.x0y1 = 2.0F * (tmp1 - tmp2) * invs;
+		out.x1y0 = 2.0 * (tmp1 + tmp2) * invs;
+		out.x0y1 = 2.0 * (tmp1 - tmp2) * invs;
 		tmp1 = x * z;
 		tmp2 = y * w;
-		out.x2y0 = 2.0F * (tmp1 - tmp2) * invs;
-		out.x0y2 = 2.0F * (tmp1 + tmp2) * invs;
+		out.x2y0 = 2.0 * (tmp1 - tmp2) * invs;
+		out.x0y2 = 2.0 * (tmp1 + tmp2) * invs;
 		tmp1 = y * z;
 		tmp2 = x * w;
-		out.x2y1 = 2.0F * (tmp1 + tmp2) * invs;
-		out.x1y2 = 2.0F * (tmp1 - tmp2) * invs;
+		out.x2y1 = 2.0 * (tmp1 + tmp2) * invs;
+		out.x1y2 = 2.0 * (tmp1 - tmp2) * invs;
 		return out;
 	}
 
@@ -54,12 +53,12 @@ struct Quaternion {
 		Vector3 out{};
 		Matrix4x4 m = to_matrix4x4();
 		out.y = rad2deg(asin(std::clamp(m.x0y2, -1.0, 1.0)));
-		if (fabs(m.x0y2) < 0.9999999F) {
+		if (fabs(m.x0y2) < 0.9999999) {
 			out.x = rad2deg(atan2(-m.x1y2, m.x2y2));
 			out.z = rad2deg(atan2(-m.x0y1, m.x0y0));
 		} else {
 			out.x = rad2deg(atan2(m.x2y1, m.x1y1));
-			out.z = 0.0F;
+			out.z = 0.0;
 		}
 		return out;
 	}
@@ -95,7 +94,7 @@ struct Quaternion {
 	}
 
 	Vector3 multiply_vec3(const Vector3& rhs) {
-		double v[12] = { x * 2.0F, y * 2.0F, z * 2.0F };
+		double v[12] = { x * 2.0, y * 2.0, z * 2.0 };
 		v[3] = x * v[0];
 		v[4] = y * v[1];
 		v[5] = z * v[2];
@@ -106,9 +105,9 @@ struct Quaternion {
 		v[10] = w * v[1];
 		v[11] = w * v[2];
 		return Vector3(
-			(1.0F - (v[4] + v[5])) * rhs.x + (v[6] - v[11]) * rhs.y + (v[7] + v[10]) * rhs.z,
-			(v[6] + v[11]) * rhs.x + (1.0F - (v[3] + v[5])) * rhs.y + (v[8] - v[9]) * rhs.z,
-			(v[7] - v[10]) * rhs.x + (v[8] + v[9]) * rhs.y + (1.0F - (v[3] + v[4])) * rhs.z);
+			(1.0 - (v[4] + v[5])) * rhs.x + (v[6] - v[11]) * rhs.y + (v[7] + v[10]) * rhs.z,
+			(v[6] + v[11]) * rhs.x + (1.0 - (v[3] + v[5])) * rhs.y + (v[8] - v[9]) * rhs.z,
+			(v[7] - v[10]) * rhs.x + (v[8] + v[9]) * rhs.y + (1.0 - (v[3] + v[4])) * rhs.z);
 	}
 
 	std::string to_string() const {
@@ -130,7 +129,7 @@ struct Quaternion {
 
 	static Quaternion angle_axis(double angle, const Vector3& axis) {
 		Vector3 cpy = axis * sin(angle * 0.5);
-		return Quaternion(cos(angle * 0.5F), cpy.x, cpy.y, cpy.z);
+		return Quaternion(cos(angle * 0.5), cpy.x, cpy.y, cpy.z);
 	}
 
 	static Quaternion angle_between(const Vector3& lhs, const Vector3& rhs) {
@@ -151,7 +150,7 @@ struct Quaternion {
 		return q;
 	}
 
-	static Quaternion look_at(const Vector3& from, const Vector3& to, const Vector3& up) {
+	static Quaternion look_at(const Vector3& from, const Vector3& to) {
 		const Vector3 diff = to - from;;
 		Vector3 direction = diff.normal();
 		const Vector3 back = Vector3::backward();
@@ -159,7 +158,7 @@ struct Quaternion {
 		if (fabs(dot - (-1.0)) < 0.000001) {
 			Vector3 u = Vector3::up();
 			return angle_axis(rad2deg(M_PI), u);
-		} else if (fabs(dot - (1.0F)) < 0.000001F)
+		} else if (fabs(dot - (1.0)) < 0.000001)
 			return Quaternion();
 		double angle = -rad2deg(acos(dot));
 		const Vector3 cross = Vector3::cross(back, direction);
@@ -169,12 +168,12 @@ struct Quaternion {
 
 	static Quaternion from_euler(const Vector3& from) {
 		double x = deg2rad(from.x), y = deg2rad(from.y), z = deg2rad(from.z);
-		double c1 = cos(x / 2.0F);
-		double c2 = cos(y / 2.0F);
-		double c3 = cos(z / 2.0F);
-		double s1 = sin(x / 2.0F);
-		double s2 = sin(y / 2.0F);
-		double s3 = sin(z / 2.0F);
+		double c1 = cos(x / 2.0);
+		double c2 = cos(y / 2.0);
+		double c3 = cos(z / 2.0);
+		double s1 = sin(x / 2.0);
+		double s2 = sin(y / 2.0);
+		double s3 = sin(z / 2.0);
 		return {
 			c1 * c2 * c3 - s1 * s2 * s3,
 			s1 * c2 * c3 + c1 * s2 * s3,
@@ -190,17 +189,17 @@ struct Quaternion {
 			m02 = m[8], m12 = m[9], m22 = m[10];
 		double t = m00 + m11 + m22;
 		if (t > 0) {
-			const double s = 0.5F / sqrt(t + 1.0F);
-			return Quaternion(0.25F / s, (m12 - m21) * s, (m20 - m02) * s, (m01 - m10) * s);
+			const double s = 0.5 / sqrt(t + 1.0);
+			return Quaternion(0.25 / s, (m12 - m21) * s, (m20 - m02) * s, (m01 - m10) * s);
 		} else if (m00 > m11 && m00 > m22) {
-			const double s = 2.0F * sqrt(1.0F + m00 - m11 - m22);
-			return Quaternion((m12 - m21) / s, 0.25F * s, (m10 + m01) / s, (m20 + m02) / s);
+			const double s = 2.0 * sqrt(1.0 + m00 - m11 - m22);
+			return Quaternion((m12 - m21) / s, 0.25 * s, (m10 + m01) / s, (m20 + m02) / s);
 		} else if (m11 > m22) {
-			const double s = 2.0F * sqrt(1.0F + m11 - m00 - m22);
-			return Quaternion((m20 - m02) / s, (m10 + m01) / s, 0.25F * s, (m21 + m12) / s);
+			const double s = 2.0 * sqrt(1.0 + m11 - m00 - m22);
+			return Quaternion((m20 - m02) / s, (m10 + m01) / s, 0.25 * s, (m21 + m12) / s);
 		} else {
-			const double s = 2.0F * sqrt(1.0F + m22 - m00 - m11);
-			return Quaternion((m01 - m10) / s, (m20 + m02) / s, (m21 + m12) / s, 0.25F * s);
+			const double s = 2.0 * sqrt(1.0 + m22 - m00 - m11);
+			return Quaternion((m01 - m10) / s, (m20 + m02) / s, (m21 + m12) / s, 0.25 * s);
 		}
 	}
 
@@ -239,9 +238,9 @@ struct Quaternion {
 				r.z = z;
 				return r;
 			}
-			const double sqrSinHalfTheta = 1.0F - cosHalfTheta * cosHalfTheta;
+			const double sqrSinHalfTheta = 1.0 - cosHalfTheta * cosHalfTheta;
 			if (sqrSinHalfTheta <= std::numeric_limits<double>::epsilon()) {
-				const double s = 1.0F - factor;
+				const double s = 1.0 - factor;
 				r.w = s * w + factor * r.w;
 				r.x = s * x + factor * r.x;
 				r.y = s * y + factor * r.y;
@@ -251,7 +250,7 @@ struct Quaternion {
 			}
 			const double sinHalfTheta = sqrt(sqrSinHalfTheta);
 			const double halfTheta = atan2(sinHalfTheta, cosHalfTheta);
-			const double ratioA = sin((1.0F - factor) * halfTheta) / sinHalfTheta,
+			const double ratioA = sin((1.0 - factor) * halfTheta) / sinHalfTheta,
 				ratioB = sin(factor * halfTheta) / sinHalfTheta;
 			r.w = (w * ratioA + r.w * ratioB);
 			r.x = (x * ratioA + r.x * ratioB);
