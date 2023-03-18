@@ -5,6 +5,7 @@
     <option name="linkedExternalProjectsSettings">
       <MakefileProjectSettings>
         <option name="buildOptions" value="-j8" />
+        <option name="buildTarget" value="lambda" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
