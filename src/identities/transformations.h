@@ -32,7 +32,7 @@ struct Transform {
 	Vector3 scale;
 	int parent;
 
-	Transform() : parent(-1) {}
+	Transform() : scale(Vector3::one()), parent(-1) {}
 
 	void reset() {
 		matrix.reset();
@@ -75,28 +75,28 @@ struct Transform {
 		parent = newParent;
 	}
 
-	void set_position(const Vector3& position) {
-		_requests.push_back({ TransformRequestType::SetPosition, position });
+	void set_position(const Vector3& newPosition) {
+		_requests.push_back({ TransformRequestType::SetPosition, { newPosition } });
 	}
 
-	void set_rotation(const Vector3& rotation) {
-		_requests.push_back({ TransformRequestType::SetRotation, rotation });
+	void set_rotation(const Vector3& newRotation) {
+		_requests.push_back({ TransformRequestType::SetRotation, { newRotation } });
 	}
 
-	void set_scale(const Vector3& scale) {
-		_requests.push_back({ TransformRequestType::SetScale, scale });
+	void set_scale(const Vector3& newScale) {
+		_requests.push_back({ TransformRequestType::SetScale, { newScale } });
 	}
 
 	void change_position(const Vector3& delta) {
-		_requests.push_back({ TransformRequestType::ChangePosition, delta });
+		_requests.push_back({ TransformRequestType::ChangePosition, { delta } });
 	}
 
 	void change_rotation(const Vector3& delta) {
-		_requests.push_back({ TransformRequestType::ChangeRotation, delta });
+		_requests.push_back({ TransformRequestType::ChangeRotation, { delta } });
 	}
 
 	void change_scale(const Vector3& delta) {
-		_requests.push_back({ TransformRequestType::ChangeScale, delta });
+		_requests.push_back({ TransformRequestType::ChangeScale, { delta } });
 	}
 
 private:
@@ -153,12 +153,12 @@ private:
 	Transform& at(int index) { return _transformations[index]; }
 
 	static void parallel_transform(const ParallelTransformState* state) {
-		for (int i = state->start; i < state->self->_transformations.size(); i += state->stagger)
+		for (size_t i = state->start; i < state->self->_transformations.size(); i += state->stagger)
 			state->self->_transformations[i].transform();
 	}
 
 	static void parallel_parents(const ParallelTransformState* state) {
-		for (int i = state->start; i < state->self->_transformations.size(); i += state->stagger) {
+		for (size_t i = state->start; i < state->self->_transformations.size(); i += state->stagger) {
 			int parent = state->self->_transformations[i].parent;
 			while (parent != -1) {
 				state->self->_transformations[i].matrix *= state->self->_transformations[parent].matrix;
@@ -168,16 +168,17 @@ private:
 	}
 
 	void parallel_exec(void(*call)(const ParallelTransformState*)) {
-		int threadCount = (int)std::thread::hardware_concurrency();
+		size_t threadCount = std::thread::hardware_concurrency();
+		int stagger = (int)std::min(threadCount, _transformations.size());
 		_parallels.reserve(threadCount);
-		for (int i = 0; i < threadCount; ++i) {
-			ParallelTransformState state;
+		for (int i = 0; i < stagger; ++i) {
+			_parallels.push_back({});
+			ParallelTransformState& state = _parallels.back();
 			state.self = this;
 			state.start = i;
-			state.stagger = threadCount;
-			_parallels.push_back(state);
-			size_t len = _parallels.size();
-			_parallels[len - 1].thread = std::thread(call, &_parallels[len - 1]);
+			state.stagger = stagger;
+			_parallels[_parallels.size() - 1].thread =
+				std::thread(call, &_parallels[_parallels.size() - 1]);
 		}
 		for (auto& p : _parallels)
 			if (p.thread->joinable())
@@ -192,27 +193,27 @@ private:
  * in place of where transform pointers would usually go in game engines
  */
 struct TransformClaim {
-	TransformClaim(Transformations& transformations) : _index(transformations.claim()),
+	explicit TransformClaim(Transformations& transformations) : _index(transformations.claim()),
 		_transformations(transformations), _transform(transformations.at(_index)) {}
 	~TransformClaim() { _transformations.release(_index); }
-	const Matrix4x4& matrix() const { return _transform.matrix; }
+	[[nodiscard]] const Matrix4x4& matrix() const { return _transform.matrix; }
 	void set_position(const Vector3& position) { _transform.set_position(position); }
-	void set_rotation(const Vector3& rotation) { _transform.set_position(rotation); }
-	void set_scale(const Vector3& scale) { _transform.set_position(scale); }
+	void set_rotation(const Vector3& rotation) { _transform.set_rotation(rotation); }
+	void set_scale(const Vector3& scale) { _transform.set_scale(scale); }
 	void translate(const Vector3& delta) { _transform.change_position(delta); }
 	void rotate(const Vector3& delta) { _transform.change_rotation(delta); }
 	void scale(const Vector3& delta) { _transform.change_scale(delta); }
-	Vector3 position() const { return _transform.position; }
-	Vector3 rotation() const { return _transform.rotation; }
-	Vector3 scale() const { return _transform.scale; }
+	[[nodiscard]] Vector3 position() const { return _transform.position; }
+	[[nodiscard]] Vector3 rotation() const { return _transform.rotation; }
+	[[nodiscard]] Vector3 scale() const { return _transform.scale; }
 	void set_parent(const TransformClaim& parent) { set_parent_by_index(parent._index); }
 	void set_parent_by_index(int parent) { _transform.set_parent(parent); }
 
 private:
 	int _index;
 	// This is an aggregation since this pointer will never outlive Transformations
-	Transform& _transform;
 	Transformations& _transformations;
+	Transform& _transform;
 };
 
 #endif
