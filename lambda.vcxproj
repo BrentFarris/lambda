@@ -141,6 +141,7 @@
     <ClCompile Include="src\math\ray.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\math\color.h" />
     <ClInclude Include="src\math\geometry.h" />
     <ClInclude Include="src\math\hardware_vector.h" />
     <ClInclude Include="src\math\line_segment.h" />

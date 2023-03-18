@@ -53,5 +53,8 @@
     <ClInclude Include="src\math\ray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\math\color.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
