@@ -9,68 +9,68 @@
 
 struct Vector3 {
 	union {
-		double linear[3];
+		float linear[3];
 		struct {
-			double x;
-			double y;
-			double z;
+			float x;
+			float y;
+			float z;
 		};
 	};
 
-	Vector3() : x(0.0), y(0.0), z(0.0) {}
-	Vector3(double x, double y, double z) : x(x), y(y), z(z) {}
-	Vector3(double xyz) : x(xyz), y(xyz), z(xyz) {}
-	Vector3(double* xyz) : x(xyz[0]), y(xyz[1]), z(xyz[2]) {}
+	Vector3() : x(0.0F), y(0.0F), z(0.0F) {}
+	Vector3(float x, float y, float z) : x(x), y(y), z(z) {}
+	Vector3(float xyz) : x(xyz), y(xyz), z(xyz) {}
+	Vector3(float* xyz) : x(xyz[0]), y(xyz[1]), z(xyz[2]) {}
 
 	static Vector3 zero() {
-		return Vector3(0.0);
+		return Vector3(0.0F);
 	}
 
 	static Vector3 one() {
-		return Vector3(1.0);
+		return Vector3(1.0F);
 	}
 
 	static Vector3 up() {
-		return Vector3(0.0, 1.0, 0.0);
+		return Vector3(0.0F, 1.0F, 0.0F);
 	}
 
 	static Vector3 down() {
-		return Vector3(0.0, -1.0, 0.0);
+		return Vector3(0.0F, -1.0F, 0.0F);
 	}
 
 	static Vector3 left() {
-		return Vector3(-1.0, 0.0, 0.0);
+		return Vector3(-1.0F, 0.0F, 0.0F);
 	}
 
 	static Vector3 right() {
-		return Vector3(1.0, 0.0, 0.0);
+		return Vector3(1.0F, 0.0F, 0.0F);
 	}
 
 	static Vector3 forward() {
-		return Vector3(0.0, 0.0, -1.0);
+		return Vector3(0.0F, 0.0F, -1.0F);
 	}
 
 	static Vector3 backward() {
-		return Vector3(0.0, 0.0, 1.0);
+		return Vector3(0.0F, 0.0F, 1.0F);
 	}
 
-	double length() const {
+	float length() const {
 		return sqrt(x * x + y * y + z * z);
 	}
 
-	double magnitude() const {
+	float magnitude() const {
 		return sqrt((x * x) + (y * y) + (z * z));
 	}
 
 	void normalize() {
-		double mag = magnitude();
+		float mag = magnitude();
 		x /= mag;
 		y /= mag;
 		z /= mag;
 	}
 
 	Vector3 normal() const {
-		double mag = magnitude();
+		float mag = magnitude();
 		return Vector3(x / mag, y / mag, z / mag);
 	}
 
@@ -79,9 +79,9 @@ struct Vector3 {
 	}
 
 	Vector3 orthogonal() const {
-		double tx = std::abs(x);
-		double ty = std::abs(y);
-		double tz = std::abs(z);
+		float tx = std::abs(x);
+		float ty = std::abs(y);
+		float tz = std::abs(z);
 		Vector3 other = tx < ty
 			? (tx < tz ? right() : forward())
 			: (ty < tz ? up() : forward());
@@ -109,13 +109,13 @@ struct Vector3 {
 		std::cout << "Vector3<" << x << ", " << y << ", " << z << ">";
 	}
 
-	static double distance(const Vector3& from, const Vector3& to) {
+	static float distance(const Vector3& from, const Vector3& to) {
 		return sqrt((to.x - from.x) * (to.x - from.x)
 			+ (to.y - from.y) * (to.y - from.y)
 			+ (to.z - from.z) * (to.z - from.z));
 	}
 
-	static double dot(const Vector3& lhs, const Vector3& rhs) {
+	static float dot(const Vector3& lhs, const Vector3& rhs) {
 		return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
 	}
 
@@ -139,7 +139,7 @@ struct Vector3 {
 			std::max(std::abs(a.z), std::abs(b.z)));
 	}
 
-	static Vector3 lerp(const Vector3& from, const Vector3& to, double t) {
+	static Vector3 lerp(const Vector3& from, const Vector3& to, float t) {
 		return Vector3(from.x + (to.x - from.x) * t,
 			from.y + (to.y - from.y) * t,
 			from.z + (to.z - from.z) * t);
@@ -153,7 +153,7 @@ struct Vector3 {
 		return Vector3(x - other.x, y - other.y, z - other.z);
 	}
 
-	Vector3 operator*(double scalar) const {
+	Vector3 operator*(float scalar) const {
 		return Vector3(x * scalar, y * scalar, z * scalar);
 	}
 
@@ -161,7 +161,7 @@ struct Vector3 {
 		return Vector3(x * other.x, y * other.y, z * other.z);
 	}
 
-	Vector3 operator/(double scalar) const {
+	Vector3 operator/(float scalar) const {
 		return Vector3(x / scalar, y / scalar, z / scalar);
 	}
 
@@ -181,7 +181,7 @@ struct Vector3 {
 		z -= other.z;
 	}
 
-	void operator*=(double scalar) {
+	void operator*=(float scalar) {
 		x *= scalar;
 		y *= scalar;
 		z *= scalar;
@@ -193,7 +193,7 @@ struct Vector3 {
 		z *= other.z;
 	}
 
-	void operator/=(double scalar) {
+	void operator/=(float scalar) {
 		x /= scalar;
 		y /= scalar;
 		z /= scalar;
@@ -206,14 +206,14 @@ struct Vector3 {
 	}
 
 	bool operator==(const Vector3& other) const {
-		double epsilon = std::numeric_limits<double>::epsilon();
+		float epsilon = std::numeric_limits<float>::epsilon();
 		return std::abs(x - other.x) < epsilon
 			&& std::abs(y - other.y) < epsilon
 			&& std::abs(z - other.z) < epsilon;
 	}
 
 	bool operator!=(const Vector3& other) const {
-		double epsilon = std::numeric_limits<double>::epsilon();
+		float epsilon = std::numeric_limits<float>::epsilon();
 		return std::abs(x - other.x) > epsilon
 			|| std::abs(y - other.y) > epsilon
 			|| std::abs(z - other.z) > epsilon;

@@ -24,7 +24,7 @@ struct LineSegment {
 
 		// Compute denominator d. If d <= 0, segment is parallel to or points
 		// away from triangle, so exit early
-		double d = Vector3::dot(qp, n);
+		float d = Vector3::dot(qp, n);
 		if (d <= 0.0)
 			return false;
 
@@ -32,7 +32,7 @@ struct LineSegment {
 		// intersects iff 0 <= t. Segment intersects iff 0 <= t <= 1. Delay
 		// dividing by d until intersection has been found to pierce triangle
 		Vector3 ap = p - p0;
-		double t = Vector3::dot(ap, n);
+		float t = Vector3::dot(ap, n);
 		if (t < 0.0)
 			return false;
 		//if (t > d)  // For segment; exclude this code line for a ray test
@@ -40,10 +40,10 @@ struct LineSegment {
 
 		// Compute barycentric coordinate components and test if within bounds
 		Vector3 e = Vector3::cross(qp, ap);
-		double v = Vector3::dot(ac, e);
+		float v = Vector3::dot(ac, e);
 		if (v < 0.0 || v > d)
 			return false;
-		double w = -Vector3::dot(ab, e);
+		float w = -Vector3::dot(ab, e);
 		if (w < 0.0 || v + w > d)
 			return false;
 
@@ -58,7 +58,7 @@ struct LineSegment {
 		return true;
 	}
 
-	static LineSegment from_ray(const Ray& r, double len) {
+	static LineSegment from_ray(const Ray& r, float len) {
 		return LineSegment(r.origin, r.point(len));
 	}
 };

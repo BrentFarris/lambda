@@ -9,71 +9,71 @@
 
 struct Vector2 {
 	union {
-		double linear[2];
+		float linear[2];
 		struct {
-			double x;
-			double y;
+			float x;
+			float y;
 		};
 	};
 
-	Vector2() : x(0.0), y(0.0) {}
-	Vector2(double x, double y) : x(x), y(y) {}
-	Vector2(double xy) : x(xy), y(xy) {}
-	Vector2(double* xy) : x(xy[0]), y(xy[1]) {}
+	Vector2() : x(0.0F), y(0.0F) {}
+	Vector2(float x, float y) : x(x), y(y) {}
+	Vector2(float xy) : x(xy), y(xy) {}
+	Vector2(float* xy) : x(xy[0]), y(xy[1]) {}
 
 	static Vector2 zero() {
-		return Vector2(0.0, 0.0);
+		return Vector2(0.0F, 0.0F);
 	}
 
 	static Vector2 one() {
-		return Vector2(1.0, 1.0);
+		return Vector2(1.0F, 1.0F);
 	}
 
 	static Vector2 up() {
-		return Vector2(0.0, 1.0);
+		return Vector2(0.0F, 1.0F);
 	}
 
 	static Vector2 down() {
-		return Vector2(0.0, -1.0);
+		return Vector2(0.0F, -1.0F);
 	}
 
 	static Vector2 left() {
-		return Vector2(-1.0, 0.0);
+		return Vector2(-1.0F, 0.0F);
 	}
 
 	static Vector2 right() {
-		return Vector2(1.0, 0.0);
+		return Vector2(1.0F, 0.0F);
 	}
 
-	double length() {
+	float length() {
 		return sqrt(x * x + y * y);
 	}
 
-	double magnitude() {
+	float magnitude() {
 		return sqrt((x * x) + (y * y));
 	}
 
 	void normalize() {
-		double mag = magnitude();
+		float mag = magnitude();
 		x /= mag;
 		y /= mag;
 	}
 
 	Vector2 normalized() {
-		double mag = magnitude();
+		float mag = magnitude();
 		return Vector2(x / mag, y / mag);
 	}
 
-	double dot(const Vector2& other) {
+	float dot(const Vector2& other) {
 		return x * other.x + y * other.y;
 	}
 
-	double distance(const Vector2& target) {
+	float distance(const Vector2& target) {
 		return sqrt(((target.x - x) * (target.x - x)) + ((target.y - y) * (target.y - y)));
 	}
 
-	double angle(const Vector2& target) {
-		return (atan2(x - target.x, y - target.y) * (180.0 / 3.14159265358979323846)) + 180.0;
+	float angle(const Vector2& target) {
+		return (atan2(x - target.x, y - target.y) * (180.0F / 3.14159265358979323846F)) + 180.0F;
 	}
 
 	Vector2 min(const Vector2& a, const Vector2& b) {
@@ -84,7 +84,7 @@ struct Vector2 {
 		return Vector2(std::max(a.x, b.x), std::max(a.y, b.y));
 	}
 
-	static Vector2 lerp(const Vector2& from, const Vector2& to, double t) {
+	static Vector2 lerp(const Vector2& from, const Vector2& to, float t) {
 		return Vector2(from.x + (to.x - from.x) * t,
 			from.y + (to.y - from.y) * t);
 	}
@@ -114,7 +114,7 @@ struct Vector2 {
 		return Vector2(x - other.x, y - other.y);
 	}
 
-	Vector2 operator*(double scalar) const {
+	Vector2 operator*(float scalar) const {
 		return Vector2(x * scalar, y * scalar);
 	}
 
@@ -122,7 +122,7 @@ struct Vector2 {
 		return Vector2(x * other.x, y * other.y);
 	}
 
-	Vector2 operator/(double scalar) const {
+	Vector2 operator/(float scalar) const {
 		return Vector2(x / scalar, y / scalar);
 	}
 
@@ -140,7 +140,7 @@ struct Vector2 {
 		y -= other.y;
 	}
 
-	void operator*=(double scalar) {
+	void operator*=(float scalar) {
 		x *= scalar;
 		y *= scalar;
 	}
@@ -150,7 +150,7 @@ struct Vector2 {
 		y *= other.y;
 	}
 
-	void operator/=(double scalar) {
+	void operator/=(float scalar) {
 		x /= scalar;
 		y /= scalar;
 	}
@@ -161,12 +161,12 @@ struct Vector2 {
 	}
 
 	bool operator==(const Vector2& other) const {
-		double epsilon = std::numeric_limits<double>::epsilon();
+		float epsilon = std::numeric_limits<float>::epsilon();
 		return std::abs(x - other.x) < epsilon && std::abs(y - other.y) < epsilon;
 	}
 
 	bool operator!=(const Vector2& other) const {
-		double epsilon = std::numeric_limits<double>::epsilon();
+		float epsilon = std::numeric_limits<float>::epsilon();
 		return std::abs(x - other.x) > epsilon || std::abs(y - other.y) > epsilon;
 	}
 };

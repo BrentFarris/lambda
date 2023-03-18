@@ -9,50 +9,50 @@
 
 struct Quaternion {
 	union {
-		double linear[4];
+		float linear[4];
 		struct {
-			double w;
-			double x;
-			double y;
-			double z;
+			float w;
+			float x;
+			float y;
+			float z;
 		};
 	};
 
 	Quaternion() : w(1.0), x(0.0), y(0.0), z(0.0) {}
-	Quaternion(double w, double x, double y, double z) : w(w), x(x), y(y), z(z) {}
-	Quaternion(double* wxyz) : w(wxyz[0]), x(wxyz[1]), y(wxyz[2]), z(wxyz[3]) {}
+	Quaternion(float w, float x, float y, float z) : w(w), x(x), y(y), z(z) {}
+	Quaternion(float* wxyz) : w(wxyz[0]), x(wxyz[1]), y(wxyz[2]), z(wxyz[3]) {}
 	Quaternion(Vector4& input) : w(input.w), x(input.x), y(input.y), z(input.z) {}
 
 	Matrix4x4 to_matrix4x4() const {
 		Matrix4x4 out{};
-		double sqw = w * w;
-		double sqx = x * x;
-		double sqy = y * y;
-		double sqz = z * z;
+		float sqw = w * w;
+		float sqx = x * x;
+		float sqy = y * y;
+		float sqz = z * z;
 		// invs (inverse square length) is only required if quaternion is not already normalized
-		double invs = 1.0 / (sqx + sqy + sqz + sqw);
+		float invs = 1.0F / (sqx + sqy + sqz + sqw);
 		out.x0y0 = (sqx - sqy - sqz + sqw) * invs; // since sqw + sqx + sqy + sqz =1/invs*invs
 		out.x1y1 = (-sqx + sqy - sqz + sqw) * invs;
 		out.x2y2 = (-sqx - sqy + sqz + sqw) * invs;
-		double tmp1 = x * y;
-		double tmp2 = z * w;
-		out.x1y0 = 2.0 * (tmp1 + tmp2) * invs;
-		out.x0y1 = 2.0 * (tmp1 - tmp2) * invs;
+		float tmp1 = x * y;
+		float tmp2 = z * w;
+		out.x1y0 = 2.0F * (tmp1 + tmp2) * invs;
+		out.x0y1 = 2.0F * (tmp1 - tmp2) * invs;
 		tmp1 = x * z;
 		tmp2 = y * w;
-		out.x2y0 = 2.0 * (tmp1 - tmp2) * invs;
-		out.x0y2 = 2.0 * (tmp1 + tmp2) * invs;
+		out.x2y0 = 2.0F * (tmp1 - tmp2) * invs;
+		out.x0y2 = 2.0F * (tmp1 + tmp2) * invs;
 		tmp1 = y * z;
 		tmp2 = x * w;
-		out.x2y1 = 2.0 * (tmp1 + tmp2) * invs;
-		out.x1y2 = 2.0 * (tmp1 - tmp2) * invs;
+		out.x2y1 = 2.0F * (tmp1 + tmp2) * invs;
+		out.x1y2 = 2.0F * (tmp1 - tmp2) * invs;
 		return out;
 	}
 
 	Vector3 to_euler() const {
 		Vector3 out{};
 		Matrix4x4 m = to_matrix4x4();
-		out.y = rad2deg(asin(std::clamp(m.x0y2, -1.0, 1.0)));
+		out.y = rad2deg(asin(std::clamp(m.x0y2, -1.0F, 1.0F)));
 		if (fabs(m.x0y2) < 0.9999999) {
 			out.x = rad2deg(atan2(-m.x1y2, m.x2y2));
 			out.z = rad2deg(atan2(-m.x0y1, m.x0y0));
@@ -68,11 +68,11 @@ struct Quaternion {
 	}
 
 	void inverse() {
-		double d = Vector4::dot_linear(linear, linear);
-#if defined(USE_SIMD) && !defined(SIMD_NEON)
-		vf64x4 l = vf64x4_set(linear[0], -linear[1], -linear[2], -linear[3]);
-		vf64x4 r = vf64x4_set(d, d, d, d);
-		vf64x4_st(linear, vf64x4_div(l, r));
+		float d = Vector4::dot_linear(linear, linear);
+#if defined(USE_SIMD)
+		vf32x4 l = vf32x4_set(linear[0], -linear[1], -linear[2], -linear[3]);
+		vf32x4 r = vf32x4_set(d, d, d, d);
+		vf32x4_st(linear, vf32x4_div(l, r));
 #else
 		w = w / d;
 		x = -x / d;
@@ -82,10 +82,10 @@ struct Quaternion {
 	}
 
 	void conjugate() {
-#if defined(USE_SIMD) && !defined(SIMD_NEON)
-		vf64x4 l = vf64x4_ld(linear);
-		vf64x4 r = vf64x4_set(1.0, -1.0, -1.0, -1.0);
-		vf64x4_st(linear, vf64x4_mul(l, r));
+#if defined(USE_SIMD)
+		vf32x4 l = vf32x4_ld(linear);
+		vf32x4 r = vf32x4_set(1.0F, -1.0F, -1.0F, -1.0F);
+		vf32x4_st(linear, vf32x4_mul(l, r));
 #else
 		x = -x;
 		y = -y;
@@ -94,7 +94,7 @@ struct Quaternion {
 	}
 
 	Vector3 multiply_vec3(const Vector3& rhs) {
-		double v[12] = { x * 2.0, y * 2.0, z * 2.0 };
+		float v[12] = { x * 2.0F, y * 2.0F, z * 2.0F };
 		v[3] = x * v[0];
 		v[4] = y * v[1];
 		v[5] = z * v[2];
@@ -105,9 +105,9 @@ struct Quaternion {
 		v[10] = w * v[1];
 		v[11] = w * v[2];
 		return Vector3(
-			(1.0 - (v[4] + v[5])) * rhs.x + (v[6] - v[11]) * rhs.y + (v[7] + v[10]) * rhs.z,
-			(v[6] + v[11]) * rhs.x + (1.0 - (v[3] + v[5])) * rhs.y + (v[8] - v[9]) * rhs.z,
-			(v[7] - v[10]) * rhs.x + (v[8] + v[9]) * rhs.y + (1.0 - (v[3] + v[4])) * rhs.z);
+			(1.0F - (v[4] + v[5])) * rhs.x + (v[6] - v[11]) * rhs.y + (v[7] + v[10]) * rhs.z,
+			(v[6] + v[11]) * rhs.x + (1.0F - (v[3] + v[5])) * rhs.y + (v[8] - v[9]) * rhs.z,
+			(v[7] - v[10]) * rhs.x + (v[8] + v[9]) * rhs.y + (1.0F - (v[3] + v[4])) * rhs.z);
 	}
 
 	std::string to_string() const {
@@ -127,22 +127,22 @@ struct Quaternion {
 		std::cout << "Quaternion<" << w << ", " << x << ", " << y << ", " << z << ">";
 	}
 
-	static Quaternion angle_axis(double angle, const Vector3& axis) {
-		Vector3 cpy = axis * sin(angle * 0.5);
-		return Quaternion(cos(angle * 0.5), cpy.x, cpy.y, cpy.z);
+	static Quaternion angle_axis(float angle, const Vector3& axis) {
+		Vector3 cpy = axis * sin(angle * 0.5F);
+		return Quaternion(cos(angle * 0.5F), cpy.x, cpy.y, cpy.z);
 	}
 
 	static Quaternion angle_between(const Vector3& lhs, const Vector3& rhs) {
 		// It is important that the inputs are of equal length when
 		// calculating the half-way vector.
-		double k_cos_theta = Vector3::dot(lhs, rhs);
-		double k = sqrt(pow(lhs.length(), 2) * pow(rhs.length(), 2));
+		float k_cos_theta = Vector3::dot(lhs, rhs);
+		float k = sqrt(pow(lhs.length(), 2.0F) * pow(rhs.length(), 2.0F));
 		// TODO:  Approx here
-		if (k_cos_theta / k == -1.0) {
+		if (k_cos_theta / k == -1.0F) {
 			// 180 degree rotation around any orthogonal vector
 			const Vector3 o = lhs.orthogonal();
 			Vector3 oNorm = o.normal();
-			return Quaternion(0.0, oNorm.x, oNorm.y, oNorm.z);
+			return Quaternion(0.0F, oNorm.x, oNorm.y, oNorm.z);
 		}
 		Vector3 c = Vector3::cross(lhs, rhs);
 		Quaternion q = Quaternion(k_cos_theta + k, c.x, c.y, c.z);
@@ -154,26 +154,26 @@ struct Quaternion {
 		const Vector3 diff = to - from;;
 		Vector3 direction = diff.normal();
 		const Vector3 back = Vector3::backward();
-		double dot = Vector3::dot(back, direction);
-		if (fabs(dot - (-1.0)) < 0.000001) {
+		float dot = Vector3::dot(back, direction);
+		if (fabs(dot - (-1.0F)) < 0.000001F) {
 			Vector3 u = Vector3::up();
 			return angle_axis(rad2deg(M_PI), u);
-		} else if (fabs(dot - (1.0)) < 0.000001)
+		} else if (fabs(dot - (1.0F)) < 0.000001F)
 			return Quaternion();
-		double angle = -rad2deg(acos(dot));
+		float angle = -rad2deg(acos(dot));
 		const Vector3 cross = Vector3::cross(back, direction);
 		Vector3 nmlCross = cross.normal();
 		return angle_axis(angle, nmlCross);
 	}
 
 	static Quaternion from_euler(const Vector3& from) {
-		double x = deg2rad(from.x), y = deg2rad(from.y), z = deg2rad(from.z);
-		double c1 = cos(x / 2.0);
-		double c2 = cos(y / 2.0);
-		double c3 = cos(z / 2.0);
-		double s1 = sin(x / 2.0);
-		double s2 = sin(y / 2.0);
-		double s3 = sin(z / 2.0);
+		float x = deg2rad(from.x), y = deg2rad(from.y), z = deg2rad(from.z);
+		float c1 = cos(x / 2.0F);
+		float c2 = cos(y / 2.0F);
+		float c3 = cos(z / 2.0F);
+		float s1 = sin(x / 2.0F);
+		float s2 = sin(y / 2.0F);
+		float s3 = sin(z / 2.0F);
 		return {
 			c1 * c2 * c3 - s1 * s2 * s3,
 			s1 * c2 * c3 + c1 * s2 * s3,
@@ -183,29 +183,29 @@ struct Quaternion {
 	}
 
 	static Quaternion from_mat4(const Matrix4x4& mat) {
-		const double* m = mat.linear;
-		const double m00 = m[0], m10 = m[1], m20 = m[2],
+		const float* m = mat.linear;
+		const float m00 = m[0], m10 = m[1], m20 = m[2],
 			m01 = m[4], m11 = m[5], m21 = m[6],
 			m02 = m[8], m12 = m[9], m22 = m[10];
-		double t = m00 + m11 + m22;
+		float t = m00 + m11 + m22;
 		if (t > 0) {
-			const double s = 0.5 / sqrt(t + 1.0);
-			return Quaternion(0.25 / s, (m12 - m21) * s, (m20 - m02) * s, (m01 - m10) * s);
+			const float s = 0.5F / sqrt(t + 1.0F);
+			return Quaternion(0.25F / s, (m12 - m21) * s, (m20 - m02) * s, (m01 - m10) * s);
 		} else if (m00 > m11 && m00 > m22) {
-			const double s = 2.0 * sqrt(1.0 + m00 - m11 - m22);
-			return Quaternion((m12 - m21) / s, 0.25 * s, (m10 + m01) / s, (m20 + m02) / s);
+			const float s = 2.0F * sqrt(1.0F + m00 - m11 - m22);
+			return Quaternion((m12 - m21) / s, 0.25F * s, (m10 + m01) / s, (m20 + m02) / s);
 		} else if (m11 > m22) {
-			const double s = 2.0 * sqrt(1.0 + m11 - m00 - m22);
-			return Quaternion((m20 - m02) / s, (m10 + m01) / s, 0.25 * s, (m21 + m12) / s);
+			const float s = 2.0F * sqrt(1.0F + m11 - m00 - m22);
+			return Quaternion((m20 - m02) / s, (m10 + m01) / s, 0.25F * s, (m21 + m12) / s);
 		} else {
-			const double s = 2.0 * sqrt(1.0 + m22 - m00 - m11);
-			return Quaternion((m01 - m10) / s, (m20 + m02) / s, (m21 + m12) / s, 0.25 * s);
+			const float s = 2.0F * sqrt(1.0F + m22 - m00 - m11);
+			return Quaternion((m01 - m10) / s, (m20 + m02) / s, (m21 + m12) / s, 0.25F * s);
 		}
 	}
 
-	static Quaternion quat_lerp(const Quaternion& from, const Quaternion& to, double factor) {
+	static Quaternion quat_lerp(const Quaternion& from, const Quaternion& to, float factor) {
 		Quaternion r;
-		double t_ = 1.0 - factor;
+		float t_ = 1.0F - factor;
 		r.x = t_ * from.x + factor * to.x;
 		r.y = t_ * from.y + factor * to.y;
 		r.z = t_ * from.z + factor * to.z;
@@ -214,16 +214,16 @@ struct Quaternion {
 		return r;
 	}
 
-	static Quaternion quat_slerp(const Quaternion& from, const Quaternion& to, double factor) {
-		if (factor <= std::numeric_limits<double>::epsilon())
+	static Quaternion quat_slerp(const Quaternion& from, const Quaternion& to, float factor) {
+		if (factor <= std::numeric_limits<float>::epsilon())
 			return from;
-		else if (factor >= 1.0)
+		else if (factor >= 1.0F)
 			return to;
 		else {
 			Quaternion r;
-			const double x = from.x, y = from.y, z = from.z, w = from.w;
-			double cosHalfTheta = w * to.w + x * to.x + y * to.y + z * to.z;
-			if (cosHalfTheta < 0) {
+			const float x = from.x, y = from.y, z = from.z, w = from.w;
+			float cosHalfTheta = w * to.w + x * to.x + y * to.y + z * to.z;
+			if (cosHalfTheta < 0.0F) {
 				r.w = -to.w;
 				r.x = -to.x;
 				r.y = -to.y;
@@ -231,16 +231,16 @@ struct Quaternion {
 				cosHalfTheta = -cosHalfTheta;
 			} else
 				r = to;
-			if (cosHalfTheta >= 1.0) {
+			if (cosHalfTheta >= 1.0F) {
 				r.w = w;
 				r.x = x;
 				r.y = y;
 				r.z = z;
 				return r;
 			}
-			const double sqrSinHalfTheta = 1.0 - cosHalfTheta * cosHalfTheta;
-			if (sqrSinHalfTheta <= std::numeric_limits<double>::epsilon()) {
-				const double s = 1.0 - factor;
+			const float sqrSinHalfTheta = 1.0F - cosHalfTheta * cosHalfTheta;
+			if (sqrSinHalfTheta <= std::numeric_limits<float>::epsilon()) {
+				const float s = 1.0F - factor;
 				r.w = s * w + factor * r.w;
 				r.x = s * x + factor * r.x;
 				r.y = s * y + factor * r.y;
@@ -248,9 +248,9 @@ struct Quaternion {
 				r.normalize();
 				return r;
 			}
-			const double sinHalfTheta = sqrt(sqrSinHalfTheta);
-			const double halfTheta = atan2(sinHalfTheta, cosHalfTheta);
-			const double ratioA = sin((1.0 - factor) * halfTheta) / sinHalfTheta,
+			const float sinHalfTheta = sqrt(sqrSinHalfTheta);
+			const float halfTheta = atan2(sinHalfTheta, cosHalfTheta);
+			const float ratioA = sin((1.0F - factor) * halfTheta) / sinHalfTheta,
 				ratioB = sin(factor * halfTheta) / sinHalfTheta;
 			r.w = (w * ratioA + r.w * ratioB);
 			r.x = (x * ratioA + r.x * ratioB);
@@ -261,11 +261,11 @@ struct Quaternion {
 	}
 
 	Quaternion operator+(Quaternion& other) const {
-#if defined(USE_SIMD) && !defined(SIMD_NEON)
+#if defined(USE_SIMD)
 		Quaternion ret = *this;
-		vf64x4 l = vf64x4_ld(ret.linear);
-		vf64x4 r = vf64x4_ld(other.linear);
-		vf64x4_st(ret.linear, vf64x4_add(l, r));
+		vf32x4 l = vf32x4_ld(ret.linear);
+		vf32x4 r = vf32x4_ld(other.linear);
+		vf32x4_st(ret.linear, vf32x4_add(l, r));
 		return ret;
 #else
 		return Quaternion(w + other.w, x + other.x, y + other.y, z + other.z);
@@ -273,23 +273,23 @@ struct Quaternion {
 	}
 
 	Quaternion operator-(Quaternion& other) const {
-#if defined(USE_SIMD) && !defined(SIMD_NEON)
+#if defined(USE_SIMD)
 		Quaternion ret = *this;
-		vf64x4 l = vf64x4_ld(ret.linear);
-		vf64x4 r = vf64x4_ld(other.linear);
-		vf64x4_st(ret.linear, vf64x4_sub(l, r));
+		vf32x4 l = vf32x4_ld(ret.linear);
+		vf32x4 r = vf32x4_ld(other.linear);
+		vf32x4_st(ret.linear, vf32x4_sub(l, r));
 		return ret;
 #else
 		return Quaternion(w - other.w, x - other.x, y - other.y, z - other.z);
 #endif
 	}
 
-	Quaternion operator*(double scalar) const {
-#if defined(USE_SIMD) && !defined(SIMD_NEON)
+	Quaternion operator*(float scalar) const {
+#if defined(USE_SIMD)
 		Quaternion ret = *this;
-		vf64x4 l = vf64x4_ld(ret.linear);
-		vf64x4 r = vf64x4_set(scalar, scalar, scalar, scalar);
-		vf64x4_st(ret.linear, vf64x4_mul(l, r));
+		vf32x4 l = vf32x4_ld(ret.linear);
+		vf32x4 r = vf32x4_set(scalar, scalar, scalar, scalar);
+		vf32x4_st(ret.linear, vf32x4_mul(l, r));
 		return ret;
 #else
 		return Quaternion(w * scalar, x * scalar, y * scalar, z * scalar);
@@ -297,23 +297,23 @@ struct Quaternion {
 	}
 
 	Quaternion operator*(Quaternion& other) const {
-#if defined(USE_SIMD) && !defined(SIMD_NEON)
+#if defined(USE_SIMD)
 		Quaternion ret = *this;
-		vf64x4 l = vf64x4_ld(ret.linear);
-		vf64x4 r = vf64x4_ld(other.linear);
-		vf64x4_st(ret.linear, vf64x4_mul(l, r));
+		vf32x4 l = vf32x4_ld(ret.linear);
+		vf32x4 r = vf32x4_ld(other.linear);
+		vf32x4_st(ret.linear, vf32x4_mul(l, r));
 		return ret;
 #else
 		return Quaternion(w * other.w, x * other.x, y * other.y, z * other.z);
 #endif
 	}
 
-	Quaternion operator/(double scalar) const {
-#if defined(USE_SIMD) && !defined(SIMD_NEON)
+	Quaternion operator/(float scalar) const {
+#if defined(USE_SIMD)
 		Quaternion ret = *this;
-		vf64x4 l = vf64x4_ld(ret.linear);
-		vf64x4 r = vf64x4_set(scalar, scalar, scalar, scalar);
-		vf64x4_st(ret.linear, vf64x4_div(l, r));
+		vf32x4 l = vf32x4_ld(ret.linear);
+		vf32x4 r = vf32x4_set(scalar, scalar, scalar, scalar);
+		vf32x4_st(ret.linear, vf32x4_div(l, r));
 		return ret;
 #else
 		return Quaternion(w / scalar, x / scalar, y / scalar, z / scalar);
@@ -321,11 +321,11 @@ struct Quaternion {
 	}
 
 	Quaternion operator/(Quaternion other) const {
-#if defined(USE_SIMD) && !defined(SIMD_NEON)
+#if defined(USE_SIMD)
 		Quaternion ret = *this;
-		vf64x4 l = vf64x4_ld(ret.linear);
-		vf64x4 r = vf64x4_ld(other.linear);
-		vf64x4_st(ret.linear, vf64x4_div(l, r));
+		vf32x4 l = vf32x4_ld(ret.linear);
+		vf32x4 r = vf32x4_ld(other.linear);
+		vf32x4_st(ret.linear, vf32x4_div(l, r));
 		return ret;
 #else
 		return Quaternion(w / other.w, x / other.x, y / other.y, z / other.z);
@@ -333,10 +333,10 @@ struct Quaternion {
 	}
 
 	void operator+=(Quaternion& other) {
-#if defined(USE_SIMD) && !defined(SIMD_NEON)
-		vf64x4 l = vf64x4_ld(linear);
-		vf64x4 r = vf64x4_ld(other.linear);
-		vf64x4_st(linear, vf64x4_add(l, r));
+#if defined(USE_SIMD)
+		vf32x4 l = vf32x4_ld(linear);
+		vf32x4 r = vf32x4_ld(other.linear);
+		vf32x4_st(linear, vf32x4_add(l, r));
 #else
 		w += other.w;
 		x += other.x;
@@ -346,10 +346,10 @@ struct Quaternion {
 	}
 
 	void operator-=(Quaternion& other) {
-#if defined(USE_SIMD) && !defined(SIMD_NEON)
-		vf64x4 l = vf64x4_ld(linear);
-		vf64x4 r = vf64x4_ld(other.linear);
-		vf64x4_st(linear, vf64x4_sub(l, r));
+#if defined(USE_SIMD)
+		vf32x4 l = vf32x4_ld(linear);
+		vf32x4 r = vf32x4_ld(other.linear);
+		vf32x4_st(linear, vf32x4_sub(l, r));
 #else
 		w -= other.w;
 		x -= other.x;
@@ -358,11 +358,11 @@ struct Quaternion {
 #endif
 	}
 
-	void operator*=(double scalar) {
-#if defined(USE_SIMD) && !defined(SIMD_NEON)
-		vf64x4 l = vf64x4_ld(linear);
-		vf64x4 r = vf64x4_set(scalar, scalar, scalar, scalar);
-		vf64x4_st(linear, vf64x4_mul(l, r));
+	void operator*=(float scalar) {
+#if defined(USE_SIMD)
+		vf32x4 l = vf32x4_ld(linear);
+		vf32x4 r = vf32x4_set(scalar, scalar, scalar, scalar);
+		vf32x4_st(linear, vf32x4_mul(l, r));
 #else
 		w *= scalar;
 		x *= scalar;
@@ -372,10 +372,10 @@ struct Quaternion {
 	}
 
 	void operator*=(Quaternion& other) {
-#if defined(USE_SIMD) && !defined(SIMD_NEON)
-		vf64x4 l = vf64x4_ld(linear);
-		vf64x4 r = vf64x4_ld(other.linear);
-		vf64x4_st(linear, vf64x4_add(l, r));
+#if defined(USE_SIMD)
+		vf32x4 l = vf32x4_ld(linear);
+		vf32x4 r = vf32x4_ld(other.linear);
+		vf32x4_st(linear, vf32x4_add(l, r));
 #else
 		w *= other.w;
 		x *= other.x;
@@ -384,11 +384,11 @@ struct Quaternion {
 #endif
 	}
 
-	void operator/=(double scalar) {
-#if defined(USE_SIMD) && !defined(SIMD_NEON)
-		vf64x4 l = vf64x4_ld(linear);
-		vf64x4 r = vf64x4_set(scalar, scalar, scalar, scalar);
-		vf64x4_st(linear, vf64x4_div(l, r));
+	void operator/=(float scalar) {
+#if defined(USE_SIMD)
+		vf32x4 l = vf32x4_ld(linear);
+		vf32x4 r = vf32x4_set(scalar, scalar, scalar, scalar);
+		vf32x4_st(linear, vf32x4_div(l, r));
 #else
 		w /= scalar;
 		x /= scalar;
@@ -398,10 +398,10 @@ struct Quaternion {
 	}
 
 	void operator/=(Quaternion& other) {
-#if defined(USE_SIMD) && !defined(SIMD_NEON)
-		vf64x4 l = vf64x4_ld(linear);
-		vf64x4 r = vf64x4_ld(other.linear);
-		vf64x4_st(linear, vf64x4_div(l, r));
+#if defined(USE_SIMD)
+		vf32x4 l = vf32x4_ld(linear);
+		vf32x4 r = vf32x4_ld(other.linear);
+		vf32x4_st(linear, vf32x4_div(l, r));
 #else
 		w /= other.w;
 		x /= other.x;
@@ -411,12 +411,12 @@ struct Quaternion {
 	}
 
 	bool operator==(Quaternion& other) const {
-		double epsilon = std::numeric_limits<double>::epsilon();
-		double d[4];
-#if defined(USE_SIMD) && !defined(SIMD_NEON)
-		vf64x4 l = vf64x4_ld(linear);
-		vf64x4 r = vf64x4_ld(other.linear);
-		vf64x4_st(d, vf64x4_sub(l, r));
+		float epsilon = std::numeric_limits<float>::epsilon();
+		float d[4];
+#if defined(USE_SIMD)
+		vf32x4 l = vf32x4_ld(linear);
+		vf32x4 r = vf32x4_ld(other.linear);
+		vf32x4_st(d, vf32x4_sub(l, r));
 #else
 		d[0] = w - other.w;
 		d[1] = x - other.x;
@@ -431,12 +431,12 @@ struct Quaternion {
 	}
 
 	bool operator!=(Quaternion& other) const {
-		double epsilon = std::numeric_limits<double>::epsilon();
-		double d[4];
-#if defined(USE_SIMD) && !defined(SIMD_NEON)
-		vf64x4 l = vf64x4_ld(linear);
-		vf64x4 r = vf64x4_ld(other.linear);
-		vf64x4_st(d, vf64x4_sub(l, r));
+		float epsilon = std::numeric_limits<float>::epsilon();
+		float d[4];
+#if defined(USE_SIMD)
+		vf32x4 l = vf32x4_ld(linear);
+		vf32x4 r = vf32x4_ld(other.linear);
+		vf32x4_st(d, vf32x4_sub(l, r));
 #else
 		d[0] = w - other.w;
 		d[1] = x - other.x;
