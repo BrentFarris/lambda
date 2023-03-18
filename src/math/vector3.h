@@ -92,7 +92,7 @@ struct Vector3 {
 		return { -x, -y, -z };
 	}
 
-	std::string to_string() {
+	std::string to_string() const {
 		std::stringstream ss;
 		ss << std::to_string(x) << ", " << std::to_string(y) << ", " << std::to_string(z);
 		return ss.str();

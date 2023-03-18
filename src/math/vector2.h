@@ -89,7 +89,7 @@ struct Vector2 {
 			from.y + (to.y - from.y) * t);
 	}
 
-	std::string to_string() {
+	std::string to_string() const {
 		std::stringstream ss;
 		ss << std::to_string(x) << ", " << std::to_string(y);
 		return ss.str();

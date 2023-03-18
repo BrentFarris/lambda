@@ -86,7 +86,7 @@ struct Vector4 {
 		return Vector4(std::abs(x), std::abs(y), std::abs(z), std::abs(w));
 	}
 
-	std::string to_string() {
+	std::string to_string() const {
 		std::stringstream ss;
 		ss << std::to_string(x) << ", " << std::to_string(y) << ", " << std::to_string(z) << ", " << std::to_string(w);
 		return ss.str();

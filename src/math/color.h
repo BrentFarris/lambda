@@ -171,7 +171,7 @@ struct Color {
 	static Color yellowgreen() { return Color(0.604F, 0.804F, 0.196F); }
 	// End generated colors
 
-	std::string to_string() {
+	std::string to_string() const {
 		std::stringstream ss;
 		ss << std::to_string(r) << ", " << std::to_string(g) << ", " << std::to_string(b) << ", " << std::to_string(a);
 		return ss.str();

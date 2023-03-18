@@ -469,6 +469,25 @@ struct Matrix4x4 {
 #endif
 	}
 
+	std::string to_string() const {
+		std::stringstream ss;
+		ss << std::to_string(x0y0) << ", " << std::to_string(x1y0) << ", " << std::to_string(x2y0) << ", " << std::to_string(x3y0)
+			<< ", " << std::to_string(x0y1) << ", " << std::to_string(x1y1) << ", " << std::to_string(x2y1) << ", " << std::to_string(x3y1)
+			<< ", " << std::to_string(x0y2) << ", " << std::to_string(x1y2) << ", " << std::to_string(x2y2) << ", " << std::to_string(x3y2)
+			<< ", " << std::to_string(x0y3) << ", " << std::to_string(x1y3) << ", " << std::to_string(x2y3) << ", " << std::to_string(x3y3);
+		return ss.str();
+	}
+
+	void from_string(const std::string& str) {
+		char skip;
+		std::stringstream ss;
+		ss << str;
+		ss >> x0y0 >> skip >> x1y0 >> skip >> x2y0 >> skip >> x3y0
+			>> skip >> x0y1 >> skip >> x1y1 >> skip >> x2y1 >> skip >> x3y1
+			>> skip >> x0y2 >> skip >> x1y2 >> skip >> x2y2 >> skip >> x3y2
+			>> skip >> x0y3 >> skip >> x1y3 >> skip >> x2y3 >> skip >> x3y3;
+	}
+
 	Matrix4x4 operator*(const Matrix4x4& rhs) const {
 		Matrix4x4 copy = *this;
 		copy *= rhs;
