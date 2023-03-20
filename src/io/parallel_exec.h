@@ -2,7 +2,7 @@
 #define LAMBDA_IO_PARALLEL_EXEC_H
 
 namespace lambda {
-	template <class T>
+	template <typename T>
 	struct ParallelExecState {
 		T* self;
 		std::optional<std::thread> thread;
@@ -10,7 +10,7 @@ namespace lambda {
 		int stagger;
 	};
 
-	template <class T>
+	template <typename T>
 	static void parallel_exec(T* self, void(*call)(const ParallelExecState<T>*), size_t collectionSize) {
 		size_t threadCount = std::thread::hardware_concurrency();
 		int stagger = (int)std::min(threadCount, collectionSize);

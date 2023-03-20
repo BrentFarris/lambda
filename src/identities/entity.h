@@ -21,6 +21,16 @@ namespace lambda {
 			_database.erase(id);
 		}
 
+		template<typename T>
+		const T* data() {
+			return static_cast<T*>(_database[typeid(T)]);
+		}
+
+		template<typename T>
+		T* mutable_data() {
+			return static_cast<T*>(_database[typeid(T)]);
+		}
+
 	private:
 		std::unordered_map<std::type_index, EntityData*> _database;
 	};
