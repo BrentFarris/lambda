@@ -1,6 +1,8 @@
 #include "ray.h"
 #include "line_segment.h"
 
+using namespace lambda;
+
 bool Ray::triangle_hit(float rayLen, const Vector3& a,
 	const Vector3& b, const Vector3& c) const
 {

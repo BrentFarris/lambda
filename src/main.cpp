@@ -1,6 +1,8 @@
 #include <iostream>
 #include <identities/transformations.h>
 
+using namespace lambda;
+
 int main() {
 	Transformations transformations(10);
 	TransformClaim child(transformations);
