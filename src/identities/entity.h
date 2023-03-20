@@ -31,7 +31,11 @@ namespace lambda {
 			return static_cast<T*>(_database[typeid(T)]);
 		}
 
+		bool is_destroyed() const { return _destroyed; }
+		void destroy() { _destroyed = true; }
+
 	private:
+		bool _destroyed;
 		std::unordered_map<std::type_index, EntityData*> _database;
 	};
 }

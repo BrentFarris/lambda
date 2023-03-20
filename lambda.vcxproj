@@ -141,6 +141,7 @@
     <ClCompile Include="src\math\ray.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\host.h" />
     <ClInclude Include="src\identities\entity.h" />
     <ClInclude Include="src\identities\entity_data.h" />
     <ClInclude Include="src\identities\entity_updater.h" />

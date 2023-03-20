@@ -71,5 +71,8 @@
     <ClInclude Include="src\io\parallel_exec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\host.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
