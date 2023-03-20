@@ -141,7 +141,11 @@
     <ClCompile Include="src\math\ray.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\identities\entity.h" />
+    <ClInclude Include="src\identities\entity_data.h" />
+    <ClInclude Include="src\identities\entity_updater.h" />
     <ClInclude Include="src\identities\transformations.h" />
+    <ClInclude Include="src\io\parallel_exec.h" />
     <ClInclude Include="src\math\color.h" />
     <ClInclude Include="src\math\geometry.h" />
     <ClInclude Include="src\math\hardware_vector.h" />

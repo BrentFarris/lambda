@@ -59,5 +59,17 @@
     <ClInclude Include="src\identities\transformations.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\identities\entity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\identities\entity_data.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\identities\entity_updater.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\io\parallel_exec.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
